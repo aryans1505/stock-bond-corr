@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from sbc import portfolio, regimes, risk
+from sbc import portfolio, regimes, risk, uk
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
@@ -146,9 +146,82 @@ def run():
     forecast_figure(fc, FIGURES / "vol_forecast_vs_realised.png")
     risk_model = risk_model_table(rets, fc)
     risk_model.round(4).to_csv(RESULTS / "risk_model_key_dates.csv")
+    uk_rets = uk.uk_daily_returns()
+    uk_port, _ = portfolio.fixed_mix(uk_rets, UK_TARGET)
+    uk_daily = uk_decomposition_table(uk_rets, uk_port)
+    uk_daily.round(4).to_csv(RESULTS / "uk_decomposition_daily.csv")
+    uk_monthly = uk_monthly_decomposition_table(uk_rets)
+    uk_monthly.round(4).to_csv(RESULTS / "uk_decomposition_monthly.csv")
+    us_uk_corr_figure(rets, uk_rets, FIGURES / "us_uk_rolling_corr.png")
+    gilt = uk.long_gilt_moves(30.0)
+    gilt.loc["2022-09-01":"2022-10-31"].round(2).to_csv(RESULTS / "gilt30y_sep_oct_2022.csv")
+    gilt_figure(gilt, FIGURES / "gilt30y_sep2022.png")
     pd.set_option("display.width", 220)
     print(components.round(2))
     print((risk_model * 100).round(1))
+    print((uk_monthly * 100).round(1).assign(corr=uk_monthly["corr"].round(2)))
+
+
+UK_TARGET = {"ftas_tr": 0.6, "gilt10y_tr": 0.4}
+
+
+def uk_decomposition_table(rets, port):
+    rows = []
+    for name, (a, b) in WINDOWS.items():
+        d = portfolio.decompose_variance(rets.loc[a:b], UK_TARGET)
+        p = port.loc[a:b]
+        d["port_vol"] = p.std() * np.sqrt(252)
+        d["max_dd"] = portfolio.max_drawdown(p)
+        d["ann_ret"] = (1 + p).prod() ** (252 / len(p)) - 1
+        d.name = name
+        rows.append(d)
+    return pd.DataFrame(rows)[["eq_vol", "bond_vol", "corr", "mix_vol", "port_vol", "corr_share", "max_dd", "ann_ret"]]
+
+
+def uk_monthly_decomposition_table(rets):
+    m = (1 + rets).resample("ME").prod() - 1
+    rows = []
+    for name, (a, b) in WINDOWS.items():
+        d = portfolio.decompose_variance(m.loc[a:b], UK_TARGET, periods=12)
+        d.name = name
+        rows.append(d)
+    return pd.DataFrame(rows)[["eq_vol", "bond_vol", "corr", "mix_vol", "corr_share"]]
+
+
+def us_uk_corr_figure(us, uk_rets, path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(11, 4))
+    ax.plot(regimes.monthly_corr(us), color="C0", lw=1.3, label="US: S&P 500 vs 10y Treasury")
+    ax.plot(regimes.monthly_corr(uk_rets), color="C3", lw=1.3, label="UK: FTSE All-Share vs 10y gilt")
+    ax.axhline(0, color="k", lw=0.6)
+    ax.set_ylim(-1, 1)
+    ax.set_title("36-month correlation of monthly stock and bond returns")
+    ax.legend(frameon=False, loc="lower left")
+    fig.tight_layout()
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+
+
+def gilt_figure(gilt, path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    w = gilt.loc["2022-08-01":"2022-11-30"]
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(11, 5.5), sharex=True)
+    a1.plot(w.index, w["yield"], color="k", lw=1.2)
+    a1.set_ylabel("30y gilt spot, %")
+    a2.bar(w.index, w["change_bp"], color=np.where(w["change_bp"] > 0, "C3", "C0"), width=1)
+    a2.set_ylabel("daily change, bp")
+    for d in ["2022-09-23", "2022-09-28"]:
+        a1.axvline(pd.Timestamp(d), color="0.6", lw=0.8, ls="--")
+    a1.set_title("Long gilts around the 23 Sep 2022 mini-budget and the 28 Sep BoE intervention")
+    fig.tight_layout()
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
     rc = regimes.rolling_corr(rets)
     mc = regimes.monthly_corr(rets)
     regimes.plot_rolling_corr(rc, mc, FIGURES / "rolling_corr.png")

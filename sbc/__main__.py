@@ -9,6 +9,8 @@ def main(argv):
         data.fetch_treasury("par", range(1990, 2027))
         data.fetch_treasury("real", range(2003, 2027))
         data.fetch_yahoo()
+        data.fetch_dividends()
+        data.fetch_boe()
         data.write_snapshot()
     elif cmd in ("report", "reproduce"):
         # reproduce = every number and figure in the README from the data/raw snapshot
