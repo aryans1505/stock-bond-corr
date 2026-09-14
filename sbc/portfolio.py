@@ -44,8 +44,10 @@ def decompose_variance(rets, target=TARGET, periods=252):
     The identity is exact for constant weights; the monthly-rebalanced portfolio
     differs slightly because weights drift inside the month.
     """
-    e, b = rets["sp500_tr"], rets["ust10y_tr"]
-    we, wb = target["sp500_tr"], target["ust10y_tr"]
+    # first key is the equity leg, second the bond leg; this was hardcoded to the US
+    # column names until the UK panel hit it
+    (ce, we), (cb, wb) = target.items()
+    e, b = rets[ce], rets[cb]
     se, sb = e.std() * np.sqrt(periods), b.std() * np.sqrt(periods)
     rho = e.corr(b)
     terms = {
