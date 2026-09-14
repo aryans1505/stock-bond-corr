@@ -6,7 +6,7 @@ Since 1990, how much of a US 60/40 portfolio's risk has come from the correlatio
 
 ## Answer so far (as of 14 Sep 2026)
 
-US only so far. The correlation and the 60/40 split are done; the risk-model part and the UK are not.
+US only so far; the UK leg is not started.
 
 ![rolling correlation](figures/rolling_corr.png)
 
@@ -29,12 +29,32 @@ So the correlation term swung from taking about a quarter off 60/40 variance to 
 
 Full tables: `results/decomposition_daily.csv`, `results/decomposition_monthly.csv`.
 
+**Why 2022 was different: real yields, not inflation expectations.** Splitting the 10y yield into the TIPS real yield and the breakeven (2003 on):
+
+| | 10y nominal | real | breakeven | equity corr with real (monthly) | with breakeven |
+|---|---|---|---|---|---|
+| 2022 | +225 bp | +255 bp | -30 bp | -0.82 | +0.59 |
+| 2008 | -166 bp | +55 bp | -221 bp | -0.39 | +0.68 |
+| 2020 | -95 bp | -114 bp | +19 bp | -0.63 | +0.84 |
+| 2003-2020 | | | | -0.08 | +0.49 |
+
+In 2008 and 2020 the bond rally came from falling breakevens or falling real yields, and equities fell with breakevens, which is the growth-shock pattern where bonds hedge. In 2022 the entire rise was real yields; breakevens ended lower. Equities and bonds both lost because the discount rate went up, and there was nothing for a bond to hedge.
+
+![real vs breakeven](figures/real_breakeven.png)
+
+**What a trailing-window risk model would have said.** At each month-end, 60/40 vol implied by the trailing 1y and 10y covariance of daily returns, against what was realised over the next 12 months:
+
+![forecast vs realised](figures/vol_forecast_vs_realised.png)
+
+At end 2021 the 10y model implied 9.2% vol with a -0.37 correlation (the 1y model: 8.0%, and its correlation had already drifted to -0.11). 2022 realised 15.7% with +0.17, a drawdown of 21%, a miss at the 92nd percentile of month-ends since 2000. Putting the realised 2022 vols into the model's assumed correlation gives 13.5%, so 2.2 of the 6.5 missed points came from the correlation flip and 4.3 from vol levels. End 2007 and end 2019 were bigger misses, but there the correlation came in more negative than assumed and helped; 2022 is the only one of the three year-ends where it hurt. Numbers in `results/risk_model_key_dates.csv`.
+
 ## How I got there
 
 - Bond returns are built from the Treasury 10y par yield, 1990 onwards: each day the bond bought at par the day before is repriced at the par yield for its now slightly shorter maturity (`sbc/bonds.py`). Checked against IEF over 2002-2026: 33 bps a year ahead of the ETF, monthly return correlation 0.985. IEF's 15 bps fee is about half of that gap.
 - Equity is the S&P 500 total return index from Yahoo.
-- Correlations in `sbc/regimes.py`; the dated working notes are in `notes/LOG.md`.
+- Correlations in `sbc/regimes.py`, the 60/40 and its variance split in `sbc/portfolio.py`, the yield split and trailing-window forecasts in `sbc/risk.py`. `python -m sbc reproduce` rebuilds every number and figure above from the files hashed in `data/SNAPSHOT.md`; `python -m sbc fetch` refreshes them.
+- The dated working notes, including the bugs, are in `notes/LOG.md`.
 
 ## Changelog
 
-- 14 Sep 2026: repo created, question written down, data sources checked. Bond returns from yields, IEF check, first correlation figure.
+- 14 Sep 2026: repo created, question written down, data sources checked. Bond returns from yields, IEF check, first correlation figure. 60/40 variance split by era. Real vs breakeven split and the trailing-window risk model.
