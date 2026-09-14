@@ -33,3 +33,20 @@ Checked: `price(0.05, 0.05, 9.997)` is 1.000148, so the one-day-aged par bond is
 After the fix, Jul 2002 to Sep 2026: 10y 3.77% a year vs IEF 3.44%, 33 bps ahead; 7y/10y blend 29 bps ahead with monthly correlation 0.990 and 1.80% tracking error; 10y alone monthly correlation 0.985, daily 0.961. IEF's 15 bps fee explains about half the gap and the rest is IEF holding a ladder rather than one on-the-run bond, plus the Treasury 3:30pm marks against a 4pm ETF close for the daily noise. Going with the 10y series as the bond leg (one tenor, easy to explain) and keeping the blend as a robustness check. Tolerance for the same-quantity test: annualised gap inside 50 bps and monthly correlation above 0.97.
 
 Full sample 1990-2026 for the 10y: 5.46% a year, 7.45% vol, worst day -2.75% on 17 Mar 2020. Calendar 2022: -16.51% vs IEF -15.16%, the 10y has more duration.
+
+Tests: two of the five new bond tests failed on the first run and both were my expectations being wrong, not the code. Accrual compounds at the semiannual yield (1% smaller than y times dt over a day), and a 25 bp bump leaves a third-order term of 2e-6 that a 1e-6 tolerance catches. Fixed the tests, not the code.
+
+First correlation figure (`figures/rolling_corr.png`). Panel is S&P 500 total return and the 10y series on the equity calendar, 9239 days from Jan 1990. Bond returns on bond-only days get compounded into the next common day rather than dropped.
+
+Correlation by era, daily / monthly:
+- 1990-1999: +0.27 / +0.35
+- 2000-2020: -0.38 / -0.34
+- 2021: -0.11 / +0.12
+- 2022: +0.17 / +0.59
+- 2023-Sep 2026: +0.04 / +0.47
+
+So the "flip" is much bigger in monthly returns than in daily ones. Daily 2022 is only +0.17 even though both assets fell most of the year; the monthly number is +0.59. Worth understanding before leaning on either: daily correlation is dragged towards zero by day-to-day noise and by the Treasury 3:30pm marks against a 4pm equity close.
+
+Timing of the flip, which is the real-time question for leg 3: the 63d daily correlation first went positive on 25 Feb 2021, the 252d on 23 Nov 2021, and the 36m monthly not until 31 Aug 2022, by which point the 60/40 had already had most of its bad year. The 36m peaked at +0.68 in Dec 2024 and is +0.40 now. Its low was -0.75 in Jan 2013.
+
+Dead end for the day: none, but the daily-vs-monthly gap is a question I did not expect and need to answer, not just report.
