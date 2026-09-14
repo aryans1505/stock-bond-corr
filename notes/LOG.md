@@ -79,3 +79,20 @@ Leg 3b, the trailing-window risk model (`results/trailing_forecasts.csv`, `risk_
 - Diversification ratio (weighted vols over portfolio vol): the 10y model assumed 1.35 at end 2021; 2022 delivered 1.19.
 
 Figures: `figures/real_breakeven.png`, `figures/vol_forecast_vs_realised.png`. The second one makes the point on its own: a 1y window is just the last spike shifted right by a year, and a 10y window barely moves.
+
+UK leg, same day. The BoE archive was the dead end I expected, but a small one: one zip of eight workbooks by period, sheet called "4. nominal spot curve" until 2004 and "4. spot curve" from 2005, header row found by its "years:" label, tenors 0.5 to 25y until 2015 and to 40y from Jan 2016, one workbook starting with a "Refresh" row instead of a date. `load_boe_spot` handles all of that; 12055 days from Jan 1979.
+
+BoE publishes spot (zero) rates, not par yields, so I derive a semiannual par yield from the spots at each 0.5y tenor: par = 2 (1 - d_T) / sum d_i. The terminology page only says the instantaneous forwards are continuously compounded; I took the spots as continuous too. Checked the alternative: annual compounding moves the IGLT gap from 28 to 30 bp, so it doesn't matter for anything here. After that the gilt returns use the exact same `constant_maturity_returns` as the Treasuries, which is the point.
+
+Checks against ETFs, using Close plus the listed dividend because Yahoo's Adj Close for .L tickers ignores the distributions it lists (ISF.L adjusted and unadjusted returns differ by 3 bps a year over 2009-2026, which cannot be right for a 3.5%-yielding index):
+- 10y gilt vs IGLT.L (all maturities) May 2013 to Sep 2026: 28 bps a year ahead, monthly correlation 0.919. IGLT is longer than 10y; a 10y/20y blend is 4 bps off with monthly correlation 0.956. Using the 10y for the panel to match the US and noting the blend.
+- FTSE 100 price plus nothing vs ISF.L total return, Mar 2013 to Sep 2026: ISF earns 3.85% a year more, net of its 7 bp fee. So a flat 3.5% accrual on the FTSE All-Share price index is slightly conservative. Correlations don't depend on it at all; the UK 60/40 return and drawdown do.
+
+UK results (FTSE All-Share 60 / 10y gilt 40, monthly rebalanced, from 1990):
+- Monthly correlation: 1990s +0.36, 2000-2020 -0.18, 2021-2026 +0.51, 2022 +0.79 with the correlation term 42.9% of 60/40 variance. Daily 2022 is -0.02 (!), the horizon effect again but starker.
+- The UK never had the clean negative regime the US did: 2000-2020 is -0.18 against -0.34, the 252d daily correlation was back above zero in Apr 2014 and the 36m in Jun 2015. Gilts were a weaker hedge for a UK investor all along.
+- 2022: UK 60/40 -8.8% for the year, drawdown -16.4% at the trough on 12 Oct 2022, against the US -17.2% and -21.7%. Not because gilts did better (gilt vol 13.2% against 10.5% for Treasuries) but because the FTSE All-Share held up: equity vol 16.5% against 24.2%, and the index was roughly flat on the year with energy and miners in it.
+- Full-sample UK 60/40 max drawdown -25.2% on 3 Mar 2009.
+- 2008 has daily correlation -0.45 and monthly +0.19. Twelve months. Reporting both.
+
+Sep 2022, 30y spot gilt (BoE only publishes 30y from 2016; the 25y goes back to 1979): 22 Sep +18 bp, 23 Sep (mini-budget) +22, 26 Sep +41, 27 Sep +50, then 28 Sep (BoE announces gilt purchases) -113 bp. Z-scores against the trailing year's daily standard deviation, using data through the previous day: 2.7, 3.3, 6.0, 6.8, then -14.3. The 28 Sep move is the largest in the 25y series since 1980 (z 13.5); the 27 Sep move has only four larger days in 46 years. Since 2017 there have been 34 days with |z| > 3 on the 30y, which says more about how fat the tails are than about any one of them.

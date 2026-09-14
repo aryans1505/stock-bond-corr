@@ -3,6 +3,8 @@
 sha256 of each file in data/raw. Yahoo back-adjusts prices, so a fresh
 download will not match these exactly; the date above is what matters.
 
+- `boe_glcnominalddata.zip` 312d4a0efaf93f5e567e6cb86234c91f0890e9696895c8819914a2487c1d11db
+- `boe_latest-yield-curve-data.zip` 7fb703d3dde656ef06501af7e19d069d1cd7be8149b2e7b4e01183b160b6e0cd
 - `ust_par_1990.csv` d8d5e4bb7ae2f13ccf03a7f50537723a4a5a37e2ebe85da3e32f53328c411d18
 - `ust_par_1991.csv` d52d81bd96f5e02d8b7a74384d568eaafe36c2a067272e0840c5ea4022c1d4d4
 - `ust_par_1992.csv` 13fb485ff7085d1c8afb70b3bb6fd7fe7c728f7b672a9c1844d7e9e6d26827f9
@@ -64,8 +66,14 @@ download will not match these exactly; the date above is what matters.
 - `ust_real_2024.csv` d3ff00a9287ebf68fdc80e72fb2d1895a73c84b3ff2a6ca8c6d64648cb470f16
 - `ust_real_2025.csv` d3d3131c41e1f93f4661d227ce7079049d51888b395aaff863b6ad8e08838b64
 - `ust_real_2026.csv` d641bfa088de551bc4cf02bdc49a78c37b032fca26147fbbe654d157bbd827c7
+- `yahoo_FTAS.csv` f8c754cb4e35865c468c33b02dbafe6e49638ee7372491a7c184c3db549a91f0
+- `yahoo_FTSE.csv` 6801dd20c8e6ed3e169b7edeb81f1c026ea90ad2b0227980df9114a94a367984
 - `yahoo_IEF.csv` e7105437a021e4abe2a4156794303cc0a970933dbb4639cc1f2cc2afabbcea1e
+- `yahoo_IGLT.L.csv` 950b5b99e22320edee485af4e1da7b9199a020f81b0b348eff0b95b70a58b38f
+- `yahoo_IGLT.L_div.csv` 69b8f096bad8c5222968d9ade4d13ea65ef1695966b5ba828750ab5c6469eee0
 - `yahoo_IRX.csv` da9620dd247f09f24eb06d758866159226168ceba84e6aa00f0170ba728ef1e3
+- `yahoo_ISF.L.csv` 80fd6ddb887cf77c8d8fa38bf9a16ed6381db0cef8686183678edc3812f9f8f4
+- `yahoo_ISF.L_div.csv` d010125d08f53be372b0be36688aa13af4a15b8408f0e35f6d7ac30553503834
 - `yahoo_SP500TR.csv` 6c3a5be1d06375e39fe2411576cc5a0453af4aca1a4e16dcaaa139a555cf4d7c
 - `yahoo_SPY.csv` c25b26e6aa229ae483e2285b701fd6243f003756bc302378cc2d91077bc24321
 - `yahoo_TNX.csv` cdcc533ce89217bd4bdea7c3878189615ce791c5d104c213e6bc93859b30d2d6
