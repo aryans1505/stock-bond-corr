@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from sbc import portfolio, regimes
+from sbc import portfolio, regimes, risk
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
@@ -66,11 +66,89 @@ def drawdown_figure(port, path):
     plt.close(fig)
 
 
+COMPONENT_WINDOWS = {
+    "2003-2020": ("2003", "2020"),
+    "2008": ("2008", "2008"),
+    "2020": ("2020", "2020"),
+    "2022": ("2022", "2022"),
+    "2023-2026": ("2023", "2026"),
+}
+
+KEY_DATES = ["2007-12-31", "2019-12-31", "2021-12-31"]
+
+
+def risk_model_table(rets, fc):
+    """For a few year-ends: what the trailing-window model said 60/40 vol would be, what
+    happened, and how much of the miss was the correlation rather than vol levels
+    (realised vols combined with the assumed correlation)."""
+    rows = []
+    for d in KEY_DATES:
+        i = rets.index.get_loc(pd.Timestamp(d))
+        fut = rets.iloc[i + 1:i + 253]
+        se, sb = fut.iloc[:, 0].std() * np.sqrt(252), fut.iloc[:, 1].std() * np.sqrt(252)
+        row = fc.loc[d, ["fc_252d", "corr_252d", "fc_2520d", "corr_2520d", "realised", "realised_corr", "realised_dd"]].copy()
+        for win in (252, 2520):
+            rho = fc.loc[d, f"corr_{win}d"]
+            row[f"realised_vols_assumed_corr_{win}d"] = np.sqrt(0.36 * se**2 + 0.16 * sb**2 + 0.48 * rho * se * sb)
+        row["realised_eq_vol"], row["realised_bond_vol"] = se, sb
+        row.name = d
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def forecast_figure(fc, path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(11, 4))
+    ax.plot(fc.index, fc["realised"] * 100, color="k", lw=1.2, label="realised over the next 12 months")
+    ax.plot(fc.index, fc["fc_252d"] * 100, color="C0", lw=1, label="trailing 1y covariance")
+    ax.plot(fc.index, fc["fc_2520d"] * 100, color="C3", lw=1, label="trailing 10y covariance")
+    ax.set_title("60/40 annualised vol, %: what a trailing-window model implied at each month-end vs what came next")
+    ax.legend(frameon=False, loc="upper left")
+    fig.tight_layout()
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+
+
+def real_breakeven_figure(comp, path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(11, 4))
+    ax.plot(comp.index, comp["nominal"], color="k", lw=1, label="10y nominal")
+    ax.plot(comp.index, comp["real"], color="C3", lw=1, label="10y real (TIPS)")
+    ax.plot(comp.index, comp["breakeven"], color="C0", lw=1, label="breakeven")
+    ax.axhline(0, color="0.5", lw=0.6)
+    for a, b in [("2008", "2008"), ("2020", "2020"), ("2022", "2022")]:
+        ax.axvspan(pd.Timestamp(a), pd.Timestamp(b) + pd.offsets.YearEnd(), color="0.9")
+    ax.set_title("10y Treasury yield split into real yield and breakeven, %")
+    ax.set_ylim(-1.9, None)
+    ax.legend(frameon=False, loc="lower center", ncol=3)
+    fig.tight_layout()
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+
+
 def run():
     RESULTS.mkdir(exist_ok=True)
     FIGURES.mkdir(exist_ok=True)
     rets = regimes.daily_returns()
     port, _ = portfolio.fixed_mix(rets)
+    comp = risk.yield_components()
+    components = risk.component_table(comp, risk.equity_on(comp.index), COMPONENT_WINDOWS)
+    components.round(4).to_csv(RESULTS / "real_breakeven.csv")
+    real_breakeven_figure(comp, FIGURES / "real_breakeven.png")
+    fc = risk.trailing_forecasts(rets)
+    fc.round(4).to_csv(RESULTS / "trailing_forecasts.csv")
+    forecast_figure(fc, FIGURES / "vol_forecast_vs_realised.png")
+    risk_model = risk_model_table(rets, fc)
+    risk_model.round(4).to_csv(RESULTS / "risk_model_key_dates.csv")
+    pd.set_option("display.width", 220)
+    print(components.round(2))
+    print((risk_model * 100).round(1))
     rc = regimes.rolling_corr(rets)
     mc = regimes.monthly_corr(rets)
     regimes.plot_rolling_corr(rc, mc, FIGURES / "rolling_corr.png")

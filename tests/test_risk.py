@@ -10,7 +10,10 @@ def test_forecast_at_month_end_ignores_later_data():
     rets = synthetic(n=900)
     full = risk.trailing_forecasts(rets, windows=(252,), horizon=60)
     cut = risk.trailing_forecasts(rets.iloc[:-100], windows=(252,), horizon=60)
-    common = cut.index[cut["fc_252d"].notna()]
+    # the truncated series ends mid-month, so its last "month-end" is a day the full
+    # series does not treat as one; compare only the dates both agree are month-ends
+    common = cut.index.intersection(full.index)
+    common = common[cut.loc[common, "fc_252d"].notna()]
     pd.testing.assert_series_equal(full.loc[common, "fc_252d"], cut.loc[common, "fc_252d"])
     pd.testing.assert_series_equal(full.loc[common, "corr_252d"], cut.loc[common, "corr_252d"])
 
