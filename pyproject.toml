@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sbc"
+version = "0.0.1"
+description = "Stock-bond correlation regimes and 60/40 risk, US and UK"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy==2.4.3",
+    "pandas==3.0.1",
+    "requests==2.32.5",
+    "yfinance==1.2.0",
+    "matplotlib==3.10.8",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.1.1"]
+
+[tool.setuptools]
+packages = ["sbc"]
