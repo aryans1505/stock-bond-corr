@@ -55,7 +55,8 @@ def load_treasury(kind):
         frames.append(df)
     df = pd.concat(frames).sort_index()
     df.columns = [_tenor_years(c) for c in df.columns]
-    return df
+    # 2010-10-11 (Columbus Day) is an empty row in the par file: bond market shut, row still published
+    return df.dropna(how="all")
 
 
 def load_yahoo(ticker, col="Adj Close"):
