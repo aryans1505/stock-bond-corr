@@ -32,7 +32,9 @@ def constant_maturity_returns(curve, maturity, lower, freq=2):
     y_aged = y[maturity] - slope * dt
     out = pd.Series(np.nan, index=y.index)
     for t in y.index[1:]:
-        out[t] = price(coupon[t], y_aged[t], maturity - dt[t], freq) - 1 + coupon[t] * dt[t]
+        # price() with a fractional first period is a dirty price, so the day's
+        # accrual is already in it; adding coupon*dt on top double counted the carry
+        out[t] = price(coupon[t], y_aged[t], maturity - dt[t], freq) - 1
     return out.rename(f"ust{int(maturity)}y_tr")
 
 
