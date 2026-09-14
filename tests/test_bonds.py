@@ -31,12 +31,14 @@ def test_flat_unchanged_curve_earns_carry_once():
     curve = pd.DataFrame({7.0: 4.0, 10.0: 4.0}, index=idx)
     r = bonds.constant_maturity_returns(curve, 10, 7).dropna()
     days = pd.Series(idx, index=idx).diff().dt.days.dropna()
-    expected = 0.04 * days / 365
-    assert np.allclose(r.values, expected.values, atol=3e-6)
+    # accrual compounds at the semiannual yield, so it is (1 + y/2)^(2 dt) - 1, not y dt
+    expected = (1 + 0.04 / 2) ** (2 * days / 365) - 1
+    assert np.allclose(r.values, expected.values, atol=1e-7)
 
 
 def test_duration_convexity_match_repricing():
-    y, t, dy = 0.04, 10, 0.0025
+    # 10bp bump: at 25bp the third-order term alone is 2e-6 and the check fails
+    y, t, dy = 0.04, 10, 0.001
     dur, conv = bonds.duration_convexity(y, t)
     exact = bonds.price(y, y + dy, t) - 1
     taylor = -dur * dy + 0.5 * conv * dy**2
