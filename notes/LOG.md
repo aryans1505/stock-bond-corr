@@ -50,3 +50,17 @@ So the "flip" is much bigger in monthly returns than in daily ones. Daily 2022 i
 Timing of the flip, which is the real-time question for leg 3: the 63d daily correlation first went positive on 25 Feb 2021, the 252d on 23 Nov 2021, and the 36m monthly not until 31 Aug 2022, by which point the 60/40 had already had most of its bad year. The 36m peaked at +0.68 in Dec 2024 and is +0.40 now. Its low was -0.75 in Jan 2013.
 
 Dead end for the day: none, but the daily-vs-monthly gap is a question I did not expect and need to answer, not just report.
+
+60/40 (monthly rebalanced, weights drift inside the month). Variance split into equity, bond and correlation terms, daily returns:
+
+- 2000-2020: corr -0.38, correlation term -22.1% of 60/40 variance, 60/40 vol 10.9%, max drawdown -32.1% (9 Mar 2009).
+- 2022: corr +0.17, correlation term +8.4%, 60/40 vol 15.8%, drawdown -21.7% at the trough on 14 Oct 2022, calendar-year return -17.2%.
+- 2008 alone: corr -0.44, term -19.4%, equity vol 41%, 60/40 vol 21.5%.
+- 1994, the year people compare 2022 to: corr +0.63, term +34.6% of variance, but equity vol was only 9.8% so the 60/40 lost 8.7% peak to trough.
+- 1990s as a whole: +0.27, term +13.5%.
+
+On monthly returns the same split is: 2000-2020 corr -0.34 and term -24.8%; 2022 corr +0.59 and term +24.2%, 60/40 vol 16.5%. So the headline "the correlation term went from about -25% of 60/40 variance to about +25%" holds at the monthly horizon and is much weaker (-22% to +8%) at the daily one. Twelve monthly observations for 2022 is a small sample and the number needs saying with that attached.
+
+Why daily and monthly differ so much in 2022. Checked lead-lag: in 2022 the correlation of today's equity return with tomorrow's bond return is +0.08, against 0.00 either side in 2000-2020, so some of it is bonds catching up a day late (the Treasury 3:30pm mark and the 4pm equity close is one candidate). Weekly returns give +0.22 and monthly +0.59. Most of the gap is not a one-day lag then; it is that in 2022 both assets were repricing the same slow-moving thing, the path of Fed rates, so the shared move shows up over weeks and months while day-to-day moves stayed mostly idiosyncratic. In 2000-2020 the daily, weekly and monthly numbers agree (-0.38, -0.34, -0.34), which fits the growth-shock story where both assets react on the same day.
+
+Monthly-rebalanced 60/40 vol is within 0.2 points of the fixed-weight mix vol in every window except 2008 (21.5% vs 22.9%), where drifting weights cut equity exposure as stocks fell.
