@@ -36,16 +36,17 @@ def fixed_mix(rets, target=TARGET):
             pd.DataFrame(held, index=rets.index, columns=cols))
 
 
-def decompose_variance(rets, target=TARGET):
+def decompose_variance(rets, target=TARGET, periods=252):
     """Split the variance of the fixed-weight mix into the three textbook terms.
 
-    var = we^2 var_e + wb^2 var_b + 2 we wb rho s_e s_b. All annualised.
+    var = we^2 var_e + wb^2 var_b + 2 we wb rho s_e s_b. Annualised with `periods`
+    per year (252 for daily returns, 12 for monthly).
     The identity is exact for constant weights; the monthly-rebalanced portfolio
     differs slightly because weights drift inside the month.
     """
     e, b = rets["sp500_tr"], rets["ust10y_tr"]
     we, wb = target["sp500_tr"], target["ust10y_tr"]
-    se, sb = e.std() * np.sqrt(252), b.std() * np.sqrt(252)
+    se, sb = e.std() * np.sqrt(periods), b.std() * np.sqrt(periods)
     rho = e.corr(b)
     terms = {
         "eq_term": we**2 * se**2,
